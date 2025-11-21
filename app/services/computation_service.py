@@ -30,7 +30,8 @@ class ComputationService:
         """
         term_discount = tcp * (discount_percent / 100)
         dtcp = tcp - term_discount  # Discounted Total Contract Price
-        ntcp = dtcp - reservation_fee  # Net Total Contract Price
+        ntcp = dtcp  # Net Total Contract Price = DTCP
+        dtcp_less_rf = dtcp - reservation_fee  # DTCP - RF (for PDF only)
         
         # Handle special case: TCP <= 3,600,000
         if tcp <= 3600000:
@@ -58,6 +59,7 @@ class ComputationService:
             'dtcp': dtcp,
             'reservation_fee': reservation_fee,
             'ntcp': ntcp,
+            'dtcp_less_rf': dtcp_less_rf,  # For PDF only
             'tlp': tlp,
             'registration_fee': registration_fee,
             'move_in_fee': move_in_fee,
@@ -146,7 +148,8 @@ class ComputationService:
         Returns:
             Dictionary containing computed values
         """
-        ntcp = tcp - reservation_fee  # Net Total Contract Price
+        ntcp = tcp  # Net Total Contract Price = TCP (no discount in deferred)
+        tcp_less_rf = tcp - reservation_fee  # TCP - RF (for PDF and monthly amortization calculation)
         
         # Handle special case: TCP <= 3,600,000
         if tcp <= 3600000:
@@ -164,16 +167,17 @@ class ComputationService:
         
         move_in_fee = tlp * (move_in_fee_percent / 100)
         
-        # Calculate monthly amortizations for each term
+        # Calculate monthly amortizations for each term (based on TCP - RF)
         monthly_amortizations = {}
         for term in terms:
             if term > 0:
-                monthly_amortizations[term] = ntcp / term
+                monthly_amortizations[term] = tcp_less_rf / term
         
         return {
             'tcp': tcp,
             'reservation_fee': reservation_fee,
             'ntcp': ntcp,
+            'tcp_less_rf': tcp_less_rf,  # For PDF only
             'tlp': tlp,
             'registration_fee': registration_fee,
             'move_in_fee': move_in_fee,

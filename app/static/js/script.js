@@ -173,7 +173,7 @@ function calculateSpotCash() {
     if (tcp > 0) {
         const termDiscount = tcp * (discount / 100);
         const dtcp = tcp - termDiscount; // Discounted TCP
-        const ntcp = dtcp - reservationFee; // Net TCP
+        const ntcp = dtcp; // Net TCP = DTCP
         
         // Handle special case: TCP <= 3,600,000
         const tlp = (tcp <= 3600000) ? dtcp : (dtcp / 1.12);
