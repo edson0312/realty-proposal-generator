@@ -1,0 +1,122 @@
+MOLDEX REALTY SAMPLE COMPUTATION GENERATOR
+Setup Guide
+
+============================================================
+QUICK START GUIDE
+============================================================
+
+1. VERIFY PYTHON INSTALLATION
+   Open Command Prompt or PowerShell and run:
+   python --version
+   
+   You should see Python 3.8 or higher.
+
+2. INSTALL DEPENDENCIES
+   Navigate to the project folder and run:
+   pip install Flask Flask-WTF reportlab Pillow python-dotenv Werkzeug
+
+3. CREATE ENVIRONMENT FILE
+   Copy .env.example to .env (or create manually):
+   
+   Create a file named ".env" with this content:
+   
+   FLASK_APP=app
+   FLASK_ENV=development
+   SECRET_KEY=your-secret-key-here
+   UPLOAD_FOLDER=uploads
+   MAX_CONTENT_LENGTH=16777216
+
+4. RUN THE APPLICATION
+   In the project folder, run:
+   python app.py
+   
+   OR use Flask CLI:
+   flask run
+
+5. ACCESS THE APPLICATION
+   Open your web browser and go to:
+   http://localhost:5000
+
+============================================================
+TROUBLESHOOTING
+============================================================
+
+Problem: Port 5000 already in use
+Solution: Edit app.py and change the port number in the last line
+
+Problem: Module not found errors
+Solution: Reinstall dependencies:
+   pip install -r requirements.txt --force-reinstall
+
+Problem: File upload not working
+Solution: Check that the "uploads" folder exists in the project directory
+
+Problem: PDF generation fails
+Solution: 
+   - Ensure the img/Moldex Page Header.jpg file exists
+   - Check write permissions on the uploads folder
+   - Verify reportlab is installed: pip install reportlab --upgrade
+
+============================================================
+USAGE TIPS
+============================================================
+
+1. All fields marked with * are required
+
+2. Auto-calculations happen as you type in the Contract Details section
+
+3. You can fill in multiple payment terms - only the ones you complete will appear in the PDF
+
+4. Image files should be:
+   - Formats: JPG, PNG, GIF, WEBP
+   - Size: Under 16MB
+
+5. Generated PDFs are saved in the "uploads" folder
+
+6. To generate a proposal, you need at minimum:
+   - Client details (name, email)
+   - Product and project details
+   - Contract details (TCP, fees)
+   - At least one payment term filled out
+
+============================================================
+TESTING THE APPLICATION
+============================================================
+
+To test the computation formulas without the web interface:
+python test_computations.py
+
+This will show sample calculations for all payment types.
+
+============================================================
+PRODUCTION DEPLOYMENT
+============================================================
+
+For production use:
+
+1. Generate a secure SECRET_KEY:
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+2. Set FLASK_ENV=production in .env
+
+3. Use a production WSGI server (not Flask's built-in server):
+   pip install gunicorn
+   gunicorn -w 4 -b 0.0.0.0:8000 app:app
+
+4. Set up HTTPS with a reverse proxy (nginx or Apache)
+
+5. Implement rate limiting and additional security measures
+
+6. Regular backups of the uploads folder
+
+7. Monitor logs for errors
+
+============================================================
+SUPPORT
+============================================================
+
+For technical support, refer to README.md or contact your system administrator.
+
+Last Updated: November 11, 2024
+Version: 1.0.0
+

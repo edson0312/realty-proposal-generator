@@ -1,0 +1,149 @@
+# Cursor Rules for Flask + PostgreSQL + HTML5 Project
+
+## Tech Stack
+- **Backend**: Python 3.x with Flask framework
+- **Database**: PostgreSQL
+- **Frontend**: HTML5, CSS3, JavaScript
+- **ORM**: Flask-SQLAlchemy (preferred)
+
+## Code Style & Standards
+
+### Python/Flask
+- Follow PEP 8 style guidelines
+- Use type hints for function parameters and return values
+- Use f-strings for string formatting
+- Organize code with blueprints for modularity
+- Keep route handlers thin; move business logic to separate service functions
+- Use environment variables for configuration (never hardcode secrets)
+- Implement proper error handling with try-except blocks
+- Use Flask's `current_app`, `g`, and `request` objects appropriately
+
+### Database (PostgreSQL)
+- Use SQLAlchemy ORM for database operations
+- Define models with clear relationships (ForeignKey, relationship)
+- Use migrations (Flask-Migrate/Alembic) for schema changes
+- Always use parameterized queries to prevent SQL injection
+- Index frequently queried columns
+- Use transactions for related operations
+- Implement soft deletes where appropriate (is_deleted flag)
+
+### HTML5/Frontend
+- Write semantic HTML5 (use `<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<footer>`)
+- Keep inline styles to minimum; use external CSS files
+- Make forms accessible with proper labels and ARIA attributes
+- Use Jinja2 templating with template inheritance
+- Implement CSRF protection on all forms
+- Escape user input to prevent XSS attacks
+- Use responsive design patterns (mobile-first approach)
+
+## Project Structure
+```
+project/
+├── app/
+│   ├── __init__.py          # Flask app factory
+│   ├── models/              # SQLAlchemy models
+│   ├── routes/              # Route blueprints
+│   ├── services/            # Business logic
+│   ├── templates/           # Jinja2 templates
+│   ├── static/              # CSS, JS, images
+│   └── utils/               # Helper functions
+├── migrations/              # Database migrations
+├── tests/                   # Unit and integration tests
+├── config.py                # Configuration classes
+├── requirements.txt         # Python dependencies
+└── .env                     # Environment variables (gitignored)
+```
+
+## Best Practices
+
+### Flask Routes
+- Use RESTful conventions for API endpoints
+- Return appropriate HTTP status codes
+- Use `jsonify()` for JSON responses
+- Implement request validation before processing
+- Use decorators for authentication/authorization
+
+```python
+@app.route('/api/users/<int:user_id>', methods=['GET'])
+@login_required
+def get_user(user_id: int) -> tuple[dict, int]:
+    user = User.query.get_or_404(user_id)
+    return jsonify(user.to_dict()), 200
+```
+
+### Database Models
+- Use descriptive model and column names
+- Add `__repr__` methods for debugging
+- Create `to_dict()` methods for serialization
+- Use db constraints (unique, nullable, default)
+
+```python
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<User {self.email}>'
+```
+
+### Forms & Validation
+- Use Flask-WTF for form handling
+- Implement server-side validation always
+- Add client-side validation for better UX
+- Display clear error messages to users
+
+### Security
+- Use Flask-Login for user authentication
+- Hash passwords with werkzeug.security or bcrypt
+- Implement CSRF protection (Flask-WTF)
+- Use HTTPS in production
+- Sanitize all user inputs
+- Set secure session cookies
+- Implement rate limiting on sensitive endpoints
+
+### Templates
+- Use template inheritance (`{% extends "base.html" %}`)
+- Create reusable macros for repeated elements
+- Use `url_for()` for all internal links
+- Flash messages for user feedback
+- Implement proper escaping (Jinja2 does this by default)
+
+## Testing
+- Write unit tests for models and services
+- Write integration tests for routes
+- Use pytest as the testing framework
+- Mock external dependencies
+- Aim for >80% code coverage
+
+## Performance
+- Use connection pooling for database
+- Implement caching where appropriate (Flask-Caching)
+- Optimize database queries (eager loading, select only needed columns)
+- Compress responses (Flask-Compress)
+- Serve static files via CDN in production
+
+## Error Handling
+- Implement custom error handlers (404, 500, etc.)
+- Log errors appropriately (use Python's logging module)
+- Never expose stack traces to users in production
+- Return user-friendly error messages
+
+## Documentation
+- Add docstrings to all functions and classes (Google or NumPy style)
+- Keep README.md updated with setup instructions
+- Document API endpoints (consider Flask-RESTX or similar)
+- Comment complex business logic
+
+## Dependencies
+- Pin dependency versions in requirements.txt
+- Keep dependencies updated and secure
+- Use virtual environments (venv or pipenv)
+- Separate dev and production dependencies if needed
+
+## Git Practices
+- Write clear, descriptive commit messages
+- Never commit .env files or secrets
+- Use .gitignore for Python, Flask, and IDE files
+- Create feature branches for new development

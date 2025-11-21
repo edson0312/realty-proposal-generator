@@ -1,0 +1,503 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="header">
+    <img src="{{ url_for('static', filename='../img/Moldex_Page_Header.jpg') }}" alt="Moldex Realty" class="header-logo">
+</div>
+
+<div class="main-content">
+    <h1 class="page-title">Sample Computation Generator</h1>
+    <p class="page-subtitle">Generate professional proposals for your clients</p>
+    
+    <form id="proposalForm" enctype="multipart/form-data">
+        <!-- Client Details Section -->
+        <section class="form-section">
+            <h2 class="section-title">Client's Details</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="client_name" class="required">Client's Name</label>
+                    <input type="text" id="client_name" name="client_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="required">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact_no">Contact No.</label>
+                    <input type="tel" id="contact_no" name="contact_no">
+                </div>
+            </div>
+        </section>
+        
+        <!-- Project Details Section -->
+        <section class="form-section">
+            <h2 class="section-title">Project Details</h2>
+            
+            <div class="form-group">
+                <label for="product_type" class="required">Product Type</label>
+                <select id="product_type" name="product_type" required>
+                    <option value="Vertical">Vertical</option>
+                    <option value="Horizontal">Horizontal</option>
+                </select>
+            </div>
+            
+            <!-- Vertical Fields -->
+            <div id="vertical_fields" class="conditional-fields">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="project_type_vertical" class="required">Project Type</label>
+                        <select id="project_type_vertical" name="project_type">
+                            <option value="Mid Rise Building">Mid Rise Building</option>
+                            <option value="High Rise Building">High Rise Building</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="brand_vertical">Brand</label>
+                        <input type="text" id="brand_vertical" name="brand">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="property_details_vertical">Property Details</label>
+                        <input type="text" id="property_details_vertical" name="property_details_vertical">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="tower_building">Tower/Building</label>
+                        <input type="text" id="tower_building" name="tower_building">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="floor_unit">Floor/Unit</label>
+                        <input type="text" id="floor_unit" name="floor_unit">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="floor_area_vertical">Floor Area</label>
+                        <input type="text" id="floor_area_vertical" name="floor_area">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address_vertical">Address</label>
+                    <textarea id="address_vertical" name="address" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="project_advantages_vertical">Project Advantages</label>
+                    <textarea id="project_advantages_vertical" name="project_advantages" rows="5"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="picture_vertical">Picture</label>
+                    <input type="file" id="picture_vertical" name="picture" accept="image/*">
+                </div>
+            </div>
+            
+            <!-- Horizontal Fields -->
+            <div id="horizontal_fields" class="conditional-fields" style="display: none;">
+                <div class="form-group">
+                    <label for="project_type_horizontal" class="required">Project Type</label>
+                    <select id="project_type_horizontal" name="project_type_horiz">
+                        <option value="House and Lot">House and Lot</option>
+                        <option value="Lot">Lot</option>
+                    </select>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="brand_horizontal">Brand</label>
+                        <input type="text" id="brand_horizontal" name="brand_horiz">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phase">Phase</label>
+                        <input type="text" id="phase" name="phase">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="block_lot">Block/Lot</label>
+                        <input type="text" id="block_lot" name="block_lot">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address_horizontal">Address</label>
+                    <textarea id="address_horizontal" name="address_horiz" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="project_advantages_horizontal">Project Advantages</label>
+                    <textarea id="project_advantages_horizontal" name="project_advantages_horiz" rows="5"></textarea>
+                </div>
+                
+                <!-- House and Lot Fields -->
+                <div id="house_and_lot_fields">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="house_model">House Model</label>
+                            <input type="text" id="house_model" name="house_model">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="property_details">Property Details</label>
+                            <input type="text" id="property_details" name="property_details">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lot_area_hl">Lot Area</label>
+                            <input type="text" id="lot_area_hl" name="lot_area_hl">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="floor_area_hl">Floor Area</label>
+                            <input type="text" id="floor_area_hl" name="floor_area_hl">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="picture_hl">Picture</label>
+                        <input type="file" id="picture_hl" name="picture_hl" accept="image/*">
+                    </div>
+                </div>
+                
+                <!-- Lot Only Fields -->
+                <div id="lot_only_fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="lot_area_lot">Lot Area</label>
+                        <input type="text" id="lot_area_lot" name="lot_area_lot">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="picture_lot">Picture</label>
+                        <input type="file" id="picture_lot" name="picture_lot" accept="image/*">
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Contract Details Section -->
+        <section class="form-section">
+            <h2 class="section-title">Contract Details</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="tcp" class="required">Total Contract Price (TCP)</label>
+                    <input type="number" id="tcp" name="tcp" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reservation_fee" class="required">Reservation Fee</label>
+                    <input type="number" id="reservation_fee" name="reservation_fee" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registration_fee_percent" class="required">Registration Fee %</label>
+                    <input type="number" id="registration_fee_percent" name="registration_fee_percent" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="move_in_fee_percent" class="required">Move-in Fee %</label>
+                    <input type="number" id="move_in_fee_percent" name="move_in_fee_percent" step="0.01" required>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Payment Terms Section -->
+        <section class="form-section">
+            <h2 class="section-title">Payment Terms</h2>
+            
+            <!-- Spot Cash -->
+            <div class="payment-subsection">
+                <h3 class="subsection-title">Spot Cash</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="spot_cash_discount">Discount %</label>
+                        <input type="number" id="spot_cash_discount" name="spot_cash_discount" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_cash_discount_amount">Discount Amount</label>
+                        <input type="number" id="spot_cash_discount_amount" name="spot_cash_discount_amount" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_cash_net_tcp">Net TCP</label>
+                        <input type="number" id="spot_cash_net_tcp" name="spot_cash_net_tcp" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_cash_tlp">Total List Price (TLP)</label>
+                        <input type="number" id="spot_cash_tlp" name="spot_cash_tlp" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_cash_registration_fee">Registration Fee</label>
+                        <input type="number" id="spot_cash_registration_fee" name="spot_cash_registration_fee" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_cash_move_in_fee">Move-in Fee</label>
+                        <input type="number" id="spot_cash_move_in_fee" name="spot_cash_move_in_fee" step="0.01" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deferred Payment -->
+            <div class="payment-subsection">
+                <h3 class="subsection-title">Deferred Payment</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="deferred_discount">Discount %</label>
+                        <input type="number" id="deferred_discount" name="deferred_discount" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deferred_discount_amount">Discount Amount</label>
+                        <input type="number" id="deferred_discount_amount" name="deferred_discount_amount" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deferred_tlp">Total List Price (TLP)</label>
+                        <input type="number" id="deferred_tlp" name="deferred_tlp" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deferred_registration_fee">Registration Fee</label>
+                        <input type="number" id="deferred_registration_fee" name="deferred_registration_fee" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deferred_move_in_fee">Move-in Fee</label>
+                        <input type="number" id="deferred_move_in_fee" name="deferred_move_in_fee" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deferred_term1" class="required">Term 1 (months)</label>
+                        <input type="number" id="deferred_term1" name="deferred_term1" min="1" value="12" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deferred_term2">Term 2 (months)</label>
+                        <input type="number" id="deferred_term2" name="deferred_term2" min="1" value="18">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deferred_term3">Term 3 (months)</label>
+                        <input type="number" id="deferred_term3" name="deferred_term3" min="1" value="24">
+                    </div>
+                </div>
+                
+                <table class="computation-table" id="deferred_computation_table">
+                    <thead>
+                        <tr>
+                            <th>Months</th>
+                            <th>MA</th>
+                            <th>MA with Reg Fee</th>
+                            <th>MA with Move In Fee</th>
+                            <th>MA with Reg Fee & Move In Fee</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deferred_computation_body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #6b7280;">Enter contract details to see computations</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Spot Down Payment -->
+            <div class="payment-subsection">
+                <h3 class="subsection-title">Spot Down Payment</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="spot_down_discount">Discount %</label>
+                        <input type="number" id="spot_down_discount" name="spot_down_discount" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_down_discount_amount">Discount Amount</label>
+                        <input type="number" id="spot_down_discount_amount" name="spot_down_discount_amount" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_down_80_balance">80% Balance</label>
+                        <input type="number" id="spot_down_80_balance" name="spot_down_80_balance" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_down_tlp">Total List Price (TLP)</label>
+                        <input type="number" id="spot_down_tlp" name="spot_down_tlp" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_down_registration_fee">Registration Fee</label>
+                        <input type="number" id="spot_down_registration_fee" name="spot_down_registration_fee" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_down_move_in_fee">Move-in Fee</label>
+                        <input type="number" id="spot_down_move_in_fee" name="spot_down_move_in_fee" step="0.01" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 20/80 Payment Terms -->
+            <div class="payment-subsection">
+                <h3 class="subsection-title">20/80 Payment Terms</h3>
+                
+                <h4 class="sub-subsection-title">20% Down Payment Terms</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="payment_20_80_net_dp">20% Net Down Payment</label>
+                        <input type="number" id="payment_20_80_net_dp" name="payment_20_80_net_dp" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_with_move_in">20% with Move-in Fee</label>
+                        <input type="number" id="payment_20_80_with_move_in" name="payment_20_80_with_move_in" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_with_reg">20% with Reg Fee</label>
+                        <input type="number" id="payment_20_80_with_reg" name="payment_20_80_with_reg" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_with_both">20% with Reg Fee & Move-in Fee</label>
+                        <input type="number" id="payment_20_80_with_both" name="payment_20_80_with_both" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_tlp">Total List Price (TLP)</label>
+                        <input type="number" id="payment_20_80_tlp" name="payment_20_80_tlp" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_registration_fee">Registration Fee</label>
+                        <input type="number" id="payment_20_80_registration_fee" name="payment_20_80_registration_fee" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_move_in_fee">Move-in Fee</label>
+                        <input type="number" id="payment_20_80_move_in_fee" name="payment_20_80_move_in_fee" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_term1" class="required">Term 1 (months)</label>
+                        <input type="number" id="payment_20_80_term1" name="payment_20_80_term1" min="1" value="12" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_term2">Term 2 (months)</label>
+                        <input type="number" id="payment_20_80_term2" name="payment_20_80_term2" min="1" value="18">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="payment_20_80_term3">Term 3 (months)</label>
+                        <input type="number" id="payment_20_80_term3" name="payment_20_80_term3" min="1" value="24">
+                    </div>
+                </div>
+                
+                <table class="computation-table" id="payment_20_80_computation_table">
+                    <thead>
+                        <tr>
+                            <th>Months</th>
+                            <th>MA</th>
+                            <th>MA with Reg Fee</th>
+                            <th>MA with Move In Fee</th>
+                            <th>MA with Reg Fee & Move In Fee</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment_20_80_computation_body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #6b7280;">Enter contract details to see computations</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="payment-subsection">
+                <h3 class="subsection-title">80% Balance Terms</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="balance_80">80% Balance</label>
+                        <input type="number" id="balance_80" name="balance_80" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="balance_80_with_reg">80% with Reg Fee</label>
+                        <input type="number" id="balance_80_with_reg" name="balance_80_with_reg" step="0.01" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-grid grid-3">
+                    <div class="form-group">
+                        <label for="balance_80_term1" class="required">Term 1 (years)</label>
+                        <input type="number" id="balance_80_term1" name="balance_80_term1" step="0.1" value="5" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="balance_80_rate1" class="required">Rate 1 (%)</label>
+                        <input type="number" id="balance_80_rate1" name="balance_80_rate1" step="0.01" value="10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="balance_80_term2">Term 2 (years)</label>
+                        <input type="number" id="balance_80_term2" name="balance_80_term2" step="0.1" value="7">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="balance_80_rate2">Rate 2 (%)</label>
+                        <input type="number" id="balance_80_rate2" name="balance_80_rate2" step="0.01" value="13">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="balance_80_term3">Term 3 (years)</label>
+                        <input type="number" id="balance_80_term3" name="balance_80_term3" step="0.1" value="10">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="balance_80_rate3">Rate 3 (%)</label>
+                        <input type="number" id="balance_80_rate3" name="balance_80_rate3" step="0.01" value="15">
+                    </div>
+                </div>
+                
+                <table class="computation-table" id="balance_80_computation_table">
+                    <thead>
+                        <tr>
+                            <th>Years (Interest %)</th>
+                            <th>MA</th>
+                            <th>MA with Reg Fee</th>
+                        </tr>
+                    </thead>
+                    <tbody id="balance_80_computation_body">
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: #6b7280;">Enter contract details to see computations</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <!-- Submit Button -->
+        <div class="form-actions">
+            <button type="submit" id="generateBtn" class="btn-primary">Generate Proposal</button>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generating your proposal...</p>
+        </div>
+        
+        <!-- Message Display -->
+        <div id="messageDisplay" class="message-display" style="display: none;"></div>
+    </form>
+</div>
+{% endblock %}
+
