@@ -8,7 +8,7 @@ echo "=========================================="
 echo ""
 
 # Navigate to project directory
-cd ~/Sample-Computation || { echo "Error: Project directory not found!"; exit 1; }
+cd ~/realty-proposal-generator || { echo "Error: Project directory not found!"; exit 1; }
 
 echo "✓ In project directory: $(pwd)"
 echo ""
