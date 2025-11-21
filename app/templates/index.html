@@ -205,6 +205,17 @@
                     <input type="number" id="move_in_fee_percent" name="move_in_fee_percent" step="0.01" required>
                 </div>
             </div>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="use_tlp_toggle" name="use_tlp_toggle" checked style="width: auto;">
+                    <span>Use TLP for Registration Fee Calculation (Default: Enabled)</span>
+                </label>
+                <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                    When enabled: Registration Fee = TLP × Reg Fee %<br>
+                    When disabled: Registration Fee = TCP × Reg Fee %
+                </small>
+            </div>
         </section>
         
         <!-- Payment Terms Section -->
@@ -243,6 +254,11 @@
                     <div class="form-group">
                         <label for="spot_cash_move_in_fee">Move-in Fee</label>
                         <input type="number" id="spot_cash_move_in_fee" name="spot_cash_move_in_fee" step="0.01" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="spot_cash_total_payment">Total Payment</label>
+                        <input type="number" id="spot_cash_total_payment" name="spot_cash_total_payment" step="0.01" readonly>
                     </div>
                 </div>
             </div>
@@ -435,37 +451,10 @@
                     </div>
                 </div>
                 
-                <div class="form-grid grid-3">
-                    <div class="form-group">
-                        <label for="balance_80_term1" class="required">Term 1 (years)</label>
-                        <input type="number" id="balance_80_term1" name="balance_80_term1" step="0.1" value="5" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="balance_80_rate1" class="required">Rate 1 (%)</label>
-                        <input type="number" id="balance_80_rate1" name="balance_80_rate1" step="0.01" value="10" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="balance_80_term2">Term 2 (years)</label>
-                        <input type="number" id="balance_80_term2" name="balance_80_term2" step="0.1" value="7">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="balance_80_rate2">Rate 2 (%)</label>
-                        <input type="number" id="balance_80_rate2" name="balance_80_rate2" step="0.01" value="13">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="balance_80_term3">Term 3 (years)</label>
-                        <input type="number" id="balance_80_term3" name="balance_80_term3" step="0.1" value="10">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="balance_80_rate3">Rate 3 (%)</label>
-                        <input type="number" id="balance_80_rate3" name="balance_80_rate3" step="0.01" value="15">
-                    </div>
-                </div>
+                <p style="margin: 1rem 0; color: #6b7280; font-size: 0.875rem;">
+                    <strong>Factor Rates Applied:</strong><br>
+                    1-5 years: 0.0212470447 | 6-7 years: 0.0181919633 | 8-10 years: 0.0161334957
+                </p>
                 
                 <table class="computation-table" id="balance_80_computation_table">
                     <thead>
@@ -477,7 +466,19 @@
                     </thead>
                     <tbody id="balance_80_computation_body">
                         <tr>
-                            <td colspan="3" style="text-align: center; color: #6b7280;">Enter contract details to see computations</td>
+                            <td>5 years (10%)</td>
+                            <td id="balance_80_ma_5">-</td>
+                            <td id="balance_80_ma_reg_5">-</td>
+                        </tr>
+                        <tr>
+                            <td>7 years (13%)</td>
+                            <td id="balance_80_ma_7">-</td>
+                            <td id="balance_80_ma_reg_7">-</td>
+                        </tr>
+                        <tr>
+                            <td>10 years (15%)</td>
+                            <td id="balance_80_ma_10">-</td>
+                            <td id="balance_80_ma_reg_10">-</td>
                         </tr>
                     </tbody>
                 </table>

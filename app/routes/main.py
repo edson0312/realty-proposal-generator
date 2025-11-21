@@ -45,6 +45,7 @@ def generate_proposal():
         reservation_fee = float(form_data.get('reservation_fee', 0))
         registration_fee_percent = float(form_data.get('registration_fee_percent', 0))
         move_in_fee_percent = float(form_data.get('move_in_fee_percent', 0))
+        use_tlp_toggle = form_data.get('use_tlp_toggle') == 'on'  # Checkbox value
         
         # Initialize computation service
         comp_service = ComputationService()
@@ -96,7 +97,8 @@ def generate_proposal():
             discount = float(form_data.get('spot_cash_discount', 0))
             spot_cash_data = comp_service.compute_spot_cash(
                 tcp, discount, reservation_fee,
-                registration_fee_percent, move_in_fee_percent
+                registration_fee_percent, move_in_fee_percent,
+                use_tlp_toggle
             )
             data['spot_cash_data'] = spot_cash_data
         
@@ -113,7 +115,8 @@ def generate_proposal():
             deferred_data = comp_service.compute_deferred_payment(
                 tcp, reservation_fee,
                 registration_fee_percent, move_in_fee_percent,
-                deferred_terms
+                deferred_terms,
+                use_tlp_toggle
             )
             data['deferred_payment_data'] = deferred_data
         
@@ -122,7 +125,8 @@ def generate_proposal():
             discount = float(form_data.get('spot_down_discount', 0))
             spot_down_data = comp_service.compute_spot_down_payment(
                 tcp, discount, reservation_fee,
-                registration_fee_percent, move_in_fee_percent
+                registration_fee_percent, move_in_fee_percent,
+                use_tlp_toggle
             )
             data['spot_down_payment_data'] = spot_down_data
         
@@ -139,29 +143,37 @@ def generate_proposal():
             payment_20_80_data = comp_service.compute_20_80_payment(
                 tcp, reservation_fee,
                 registration_fee_percent, move_in_fee_percent,
-                payment_20_80_terms
+                payment_20_80_terms,
+                use_tlp_toggle
             )
             data['payment_20_80_data'] = payment_20_80_data
         
-        # Compute 80% balance amortizations (shared for both Spot Down and 20/80)
-        # This section appears after either Spot Down Payment or 20/80 Payment Terms
+        # Compute 80% balance amortizations with static terms and factor rates
+        # Static terms: 5 years (10%), 7 years (13%), 10 years (15%)
         balance_80_amortizations = []
-        if form_data.get('balance_80_term1') and form_data.get('balance_80_rate1'):
-            years = float(form_data.get('balance_80_term1'))
-            rate = float(form_data.get('balance_80_rate1'))
-            amort = comp_service.compute_80_balance_amortization(tcp, years, rate)
-            balance_80_amortizations.append(amort)
         
-        if form_data.get('balance_80_term2') and form_data.get('balance_80_rate2'):
-            years = float(form_data.get('balance_80_term2'))
-            rate = float(form_data.get('balance_80_rate2'))
-            amort = comp_service.compute_80_balance_amortization(tcp, years, rate)
-            balance_80_amortizations.append(amort)
+        # Calculate registration fee for 80% balance
+        if tcp <= 3600000:
+            tlp = tcp
+        else:
+            tlp = tcp / 1.12
         
-        if form_data.get('balance_80_term3') and form_data.get('balance_80_rate3'):
-            years = float(form_data.get('balance_80_term3'))
-            rate = float(form_data.get('balance_80_rate3'))
-            amort = comp_service.compute_80_balance_amortization(tcp, years, rate)
+        if use_tlp_toggle:
+            reg_fee_for_80 = tlp * (registration_fee_percent / 100)
+        else:
+            reg_fee_for_80 = tcp * (registration_fee_percent / 100)
+        
+        # Static terms with factor rates
+        static_terms = [
+            {'years': 5, 'rate': 10},
+            {'years': 7, 'rate': 13},
+            {'years': 10, 'rate': 15}
+        ]
+        
+        for term in static_terms:
+            amort = comp_service.compute_80_balance_amortization(
+                tcp, term['years'], term['rate'], reg_fee_for_80
+            )
             balance_80_amortizations.append(amort)
         
         # Add 80% balance amortizations to whichever payment method is being used

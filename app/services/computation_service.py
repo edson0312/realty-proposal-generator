@@ -11,7 +11,8 @@ class ComputationService:
         discount_percent: float,
         reservation_fee: float,
         registration_fee_percent: float,
-        move_in_fee_percent: float
+        move_in_fee_percent: float,
+        use_tlp_for_reg_fee: bool = True
     ) -> Dict[str, float]:
         """
         Calculate Spot Cash payment terms.
@@ -22,6 +23,7 @@ class ComputationService:
             reservation_fee: Reservation fee amount
             registration_fee_percent: Registration fee percentage
             move_in_fee_percent: Move-in fee percentage
+            use_tlp_for_reg_fee: If True, use Net TCP / 1.12 for reg fee calculation
             
         Returns:
             Dictionary containing computed values
@@ -29,9 +31,25 @@ class ComputationService:
         term_discount = tcp * (discount_percent / 100)
         dtcp = tcp - term_discount  # Discounted Total Contract Price
         ntcp = dtcp - reservation_fee  # Net Total Contract Price
-        tlp = dtcp / 1.12  # Total List Price (removing 12% VAT)
-        registration_fee = tlp * (registration_fee_percent / 100)
+        
+        # Handle special case: TCP <= 3,600,000
+        if tcp <= 3600000:
+            tlp = dtcp  # TLP = DTCP when TCP <= 3,600,000
+        else:
+            tlp = dtcp / 1.12  # Total List Price (removing 12% VAT)
+        
+        # Calculate Registration Fee based on toggle
+        if use_tlp_for_reg_fee:
+            # When enabled: Net TCP / 1.12 * Reg Fee %
+            registration_fee = (ntcp / 1.12) * (registration_fee_percent / 100)
+        else:
+            # When disabled: Net TCP * Reg Fee %
+            registration_fee = ntcp * (registration_fee_percent / 100)
+        
         move_in_fee = tlp * (move_in_fee_percent / 100)
+        
+        # Calculate Total Payment
+        total_payment = ntcp + registration_fee + move_in_fee
         
         return {
             'tcp': tcp,
@@ -43,7 +61,8 @@ class ComputationService:
             'tlp': tlp,
             'registration_fee': registration_fee,
             'move_in_fee': move_in_fee,
-            'net_tcp': ntcp
+            'net_tcp': ntcp,
+            'total_payment': total_payment
         }
     
     @staticmethod
@@ -52,7 +71,8 @@ class ComputationService:
         discount_percent: float,
         reservation_fee: float,
         registration_fee_percent: float,
-        move_in_fee_percent: float
+        move_in_fee_percent: float,
+        use_tlp_for_reg_fee: bool = True
     ) -> Dict[str, float]:
         """
         Calculate Spot Down Payment terms.
@@ -63,6 +83,7 @@ class ComputationService:
             reservation_fee: Reservation fee amount
             registration_fee_percent: Registration fee percentage
             move_in_fee_percent: Move-in fee percentage
+            use_tlp_for_reg_fee: If True, use TLP for reg fee calculation
             
         Returns:
             Dictionary containing computed values
@@ -71,8 +92,21 @@ class ComputationService:
         term_discount = down_payment * (discount_percent / 100)
         ndp = down_payment - term_discount - reservation_fee  # Net Down Payment
         balance_80 = tcp * 0.80  # 80% Balance
-        tlp = tcp / 1.12  # Total List Price
-        registration_fee = tlp * (registration_fee_percent / 100)
+        
+        # Handle special case: TCP <= 3,600,000
+        if tcp <= 3600000:
+            tlp = tcp  # TLP = TCP when TCP <= 3,600,000
+        else:
+            tlp = tcp / 1.12  # Total List Price
+        
+        # Calculate Registration Fee based on toggle
+        if use_tlp_for_reg_fee:
+            # When enabled: TLP * Reg Fee %
+            registration_fee = tlp * (registration_fee_percent / 100)
+        else:
+            # When disabled: TCP * Reg Fee %
+            registration_fee = tcp * (registration_fee_percent / 100)
+        
         move_in_fee = tlp * (move_in_fee_percent / 100)
         
         return {
@@ -95,7 +129,8 @@ class ComputationService:
         reservation_fee: float,
         registration_fee_percent: float,
         move_in_fee_percent: float,
-        terms: List[int]
+        terms: List[int],
+        use_tlp_for_reg_fee: bool = True
     ) -> Dict[str, Any]:
         """
         Calculate Deferred Payment terms.
@@ -106,13 +141,27 @@ class ComputationService:
             registration_fee_percent: Registration fee percentage
             move_in_fee_percent: Move-in fee percentage
             terms: List of term lengths in months
+            use_tlp_for_reg_fee: If True, use TLP for reg fee calculation
             
         Returns:
             Dictionary containing computed values
         """
         ntcp = tcp - reservation_fee  # Net Total Contract Price
-        tlp = tcp / 1.12  # Total List Price
-        registration_fee = tlp * (registration_fee_percent / 100)
+        
+        # Handle special case: TCP <= 3,600,000
+        if tcp <= 3600000:
+            tlp = tcp  # TLP = TCP when TCP <= 3,600,000
+        else:
+            tlp = tcp / 1.12  # Total List Price
+        
+        # Calculate Registration Fee based on toggle
+        if use_tlp_for_reg_fee:
+            # When enabled: TLP * Reg Fee %
+            registration_fee = tlp * (registration_fee_percent / 100)
+        else:
+            # When disabled: TCP * Reg Fee %
+            registration_fee = tcp * (registration_fee_percent / 100)
+        
         move_in_fee = tlp * (move_in_fee_percent / 100)
         
         # Calculate monthly amortizations for each term
@@ -137,7 +186,8 @@ class ComputationService:
         reservation_fee: float,
         registration_fee_percent: float,
         move_in_fee_percent: float,
-        terms_20: List[int]
+        terms_20: List[int],
+        use_tlp_for_reg_fee: bool = True
     ) -> Dict[str, Any]:
         """
         Calculate 20/80 Payment terms.
@@ -148,6 +198,7 @@ class ComputationService:
             registration_fee_percent: Registration fee percentage
             move_in_fee_percent: Move-in fee percentage
             terms_20: List of term lengths for 20% in months
+            use_tlp_for_reg_fee: If True, use TLP for reg fee calculation
             
         Returns:
             Dictionary containing computed values
@@ -155,8 +206,21 @@ class ComputationService:
         down_payment = tcp * 0.20  # 20% Down Payment
         ndp = down_payment - reservation_fee  # Net Down Payment
         balance_80 = tcp * 0.80  # 80% Balance
-        tlp = tcp / 1.12  # Total List Price
-        registration_fee = tlp * (registration_fee_percent / 100)
+        
+        # Handle special case: TCP <= 3,600,000
+        if tcp <= 3600000:
+            tlp = tcp  # TLP = TCP when TCP <= 3,600,000
+        else:
+            tlp = tcp / 1.12  # Total List Price
+        
+        # Calculate Registration Fee based on toggle
+        if use_tlp_for_reg_fee:
+            # When enabled: TLP * Reg Fee %
+            registration_fee = tlp * (registration_fee_percent / 100)
+        else:
+            # When disabled: TCP * Reg Fee %
+            registration_fee = tcp * (registration_fee_percent / 100)
+        
         move_in_fee = tlp * (move_in_fee_percent / 100)
         
         # Calculate monthly amortizations for 20% down payment
@@ -198,41 +262,50 @@ class ComputationService:
     def compute_80_balance_amortization(
         tcp: float,
         years: float,
-        interest_rate: float
+        interest_rate: float,
+        registration_fee: float = 0
     ) -> Dict[str, float]:
         """
-        Calculate 80% Balance Amortization.
+        Calculate 80% Balance Amortization using Factor Rates.
         
-        Formula: TCP × 80% × (1 + (Years × Interest)) ÷ Years ÷ 12
+        Factor Rates:
+        - 1-5 years: 0.0212470447
+        - 6-7 years: 0.0181919633
+        - 8-10 years: 0.0161334957
+        
+        Formula:
+        - MA = 80% Balance * Factor Rate
+        - MA with Reg Fee = (80% Balance + Reg Fee) * Factor Rate
         
         Args:
             tcp: Total Contract Price
             years: Number of years to pay
-            interest_rate: Annual interest rate as percentage
+            interest_rate: Annual interest rate as percentage (for display)
+            registration_fee: Registration fee amount
             
         Returns:
             Dictionary containing computed values
         """
         balance_80 = tcp * 0.80
-        interest_decimal = interest_rate / 100
         
-        if years > 0:
-            monthly_amortization = (balance_80 * (1 + (years * interest_decimal))) / years / 12
+        # Determine factor rate based on years
+        if 1 <= years <= 5:
+            factor_rate = 0.0212470447
+        elif 6 <= years <= 7:
+            factor_rate = 0.0181919633
+        elif 8 <= years <= 10:
+            factor_rate = 0.0161334957
         else:
-            monthly_amortization = 0
+            factor_rate = 0  # Invalid term
         
-        total_amount = monthly_amortization * years * 12
+        # Calculate MA using factor rate
+        monthly_amortization = balance_80 * factor_rate
         
         # Calculate MA with Registration Fee
-        tlp = tcp / 1.12
-        # Assuming 6% registration fee as default if not provided
-        reg_fee_amount = tlp * 0.06
-        balance_80_with_reg = balance_80 + reg_fee_amount
+        balance_80_with_reg = balance_80 + registration_fee
+        ma_with_reg = balance_80_with_reg * factor_rate
         
-        if years > 0:
-            ma_with_reg = (balance_80_with_reg * (1 + (years * interest_decimal))) / years / 12
-        else:
-            ma_with_reg = 0
+        total_amount = monthly_amortization * years * 12
         
         return {
             'balance_80': balance_80,
@@ -242,7 +315,8 @@ class ComputationService:
             'years': years,
             'interest_rate': interest_rate,
             'rate': interest_rate,  # PDF expects 'rate'
-            'total_amount': total_amount
+            'total_amount': total_amount,
+            'factor_rate': factor_rate
         }
     
     @staticmethod

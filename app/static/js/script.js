@@ -15,6 +15,7 @@ const tcpField = document.getElementById('tcp');
 const reservationFeeField = document.getElementById('reservation_fee');
 const registrationFeePercentField = document.getElementById('registration_fee_percent');
 const moveInFeePercentField = document.getElementById('move_in_fee_percent');
+const useTLPToggleField = document.getElementById('use_tlp_toggle');
 
 // Spot Cash fields
 const spotCashDiscountField = document.getElementById('spot_cash_discount');
@@ -23,6 +24,7 @@ const spotCashNetTCPField = document.getElementById('spot_cash_net_tcp');
 const spotCashTLPField = document.getElementById('spot_cash_tlp');
 const spotCashRegFeeField = document.getElementById('spot_cash_registration_fee');
 const spotCashMoveInFeeField = document.getElementById('spot_cash_move_in_fee');
+const spotCashTotalPaymentField = document.getElementById('spot_cash_total_payment');
 
 // Deferred Payment fields
 const deferredDiscountField = document.getElementById('deferred_discount');
@@ -57,12 +59,12 @@ const payment2080Term3Field = document.getElementById('payment_20_80_term3');
 // 80% Balance fields
 const balance80Field = document.getElementById('balance_80');
 const balance80WithRegField = document.getElementById('balance_80_with_reg');
-const balance80Term1Field = document.getElementById('balance_80_term1');
-const balance80Rate1Field = document.getElementById('balance_80_rate1');
-const balance80Term2Field = document.getElementById('balance_80_term2');
-const balance80Rate2Field = document.getElementById('balance_80_rate2');
-const balance80Term3Field = document.getElementById('balance_80_term3');
-const balance80Rate3Field = document.getElementById('balance_80_rate3');
+const balance80MA5Field = document.getElementById('balance_80_ma_5');
+const balance80MAReg5Field = document.getElementById('balance_80_ma_reg_5');
+const balance80MA7Field = document.getElementById('balance_80_ma_7');
+const balance80MAReg7Field = document.getElementById('balance_80_ma_reg_7');
+const balance80MA10Field = document.getElementById('balance_80_ma_10');
+const balance80MAReg10Field = document.getElementById('balance_80_ma_reg_10');
 
 // Event Listeners
 productType.addEventListener('change', handleProductTypeChange);
@@ -73,6 +75,7 @@ tcpField.addEventListener('input', calculateAll);
 reservationFeeField.addEventListener('input', calculateAll);
 registrationFeePercentField.addEventListener('input', calculateAll);
 moveInFeePercentField.addEventListener('input', calculateAll);
+useTLPToggleField.addEventListener('change', calculateAll);
 
 spotCashDiscountField.addEventListener('input', calculateAll);
 deferredDiscountField.addEventListener('input', calculateAll);
@@ -85,12 +88,6 @@ deferredTerm3Field.addEventListener('input', calculateAll);
 payment2080Term1Field.addEventListener('input', calculateAll);
 payment2080Term2Field.addEventListener('input', calculateAll);
 payment2080Term3Field.addEventListener('input', calculateAll);
-balance80Term1Field.addEventListener('input', calculateAll);
-balance80Rate1Field.addEventListener('input', calculateAll);
-balance80Term2Field.addEventListener('input', calculateAll);
-balance80Rate2Field.addEventListener('input', calculateAll);
-balance80Term3Field.addEventListener('input', calculateAll);
-balance80Rate3Field.addEventListener('input', calculateAll);
 
 // Form submission
 proposalForm.addEventListener('submit', handleFormSubmit);
@@ -171,20 +168,35 @@ function calculateSpotCash() {
     const reservationFee = parseFloat(reservationFeeField.value) || 0;
     const regFeePercent = parseFloat(registrationFeePercentField.value) || 0;
     const moveInFeePercent = parseFloat(moveInFeePercentField.value) || 0;
+    const useTLP = useTLPToggleField.checked;
     
     if (tcp > 0) {
         const termDiscount = tcp * (discount / 100);
         const dtcp = tcp - termDiscount; // Discounted TCP
         const ntcp = dtcp - reservationFee; // Net TCP
-        const tlp = dtcp / 1.12; // TLP based on Discounted TCP
-        const regFee = tlp * (regFeePercent / 100);
+        
+        // Handle special case: TCP <= 3,600,000
+        const tlp = (tcp <= 3600000) ? dtcp : (dtcp / 1.12);
+        
+        // Calculate Registration Fee based on toggle
+        let regFee;
+        if (useTLP) {
+            // When enabled: Net TCP / 1.12 * Reg Fee %
+            regFee = (ntcp / 1.12) * (regFeePercent / 100);
+        } else {
+            // When disabled: Net TCP * Reg Fee %
+            regFee = ntcp * (regFeePercent / 100);
+        }
+        
         const moveInFee = tlp * (moveInFeePercent / 100);
+        const totalPayment = ntcp + regFee + moveInFee;
         
         spotCashDiscountAmountField.value = termDiscount.toFixed(2);
         spotCashNetTCPField.value = ntcp.toFixed(2);
         spotCashTLPField.value = tlp.toFixed(2);
         spotCashRegFeeField.value = regFee.toFixed(2);
         spotCashMoveInFeeField.value = moveInFee.toFixed(2);
+        spotCashTotalPaymentField.value = totalPayment.toFixed(2);
     }
 }
 
@@ -198,11 +210,24 @@ function calculateDeferredPayment() {
     const reservationFee = parseFloat(reservationFeeField.value) || 0;
     const regFeePercent = parseFloat(registrationFeePercentField.value) || 0;
     const moveInFeePercent = parseFloat(moveInFeePercentField.value) || 0;
+    const useTLP = useTLPToggleField.checked;
     
     if (tcp > 0) {
         const discountAmount = tcp * (discount / 100);
-        const tlp = tcp / 1.12; // TLP based on TCP
-        const regFee = tlp * (regFeePercent / 100);
+        
+        // Handle special case: TCP <= 3,600,000
+        const tlp = (tcp <= 3600000) ? tcp : (tcp / 1.12);
+        
+        // Calculate Registration Fee based on toggle
+        let regFee;
+        if (useTLP) {
+            // When enabled: TLP * Reg Fee %
+            regFee = tlp * (regFeePercent / 100);
+        } else {
+            // When disabled: TCP * Reg Fee %
+            regFee = tcp * (regFeePercent / 100);
+        }
+        
         const moveInFee = tlp * (moveInFeePercent / 100);
         
         deferredDiscountAmountField.value = discountAmount.toFixed(2);
@@ -264,13 +289,26 @@ function calculateSpotDownPayment() {
     const reservationFee = parseFloat(reservationFeeField.value) || 0;
     const regFeePercent = parseFloat(registrationFeePercentField.value) || 0;
     const moveInFeePercent = parseFloat(moveInFeePercentField.value) || 0;
+    const useTLP = useTLPToggleField.checked;
     
     if (tcp > 0) {
         const downPayment = tcp * 0.20;
         const termDiscount = downPayment * (discount / 100);
         const balance80 = tcp * 0.80;
-        const tlp = tcp / 1.12; // TLP based on TCP
-        const regFee = tlp * (regFeePercent / 100);
+        
+        // Handle special case: TCP <= 3,600,000
+        const tlp = (tcp <= 3600000) ? tcp : (tcp / 1.12);
+        
+        // Calculate Registration Fee based on toggle
+        let regFee;
+        if (useTLP) {
+            // When enabled: TLP * Reg Fee %
+            regFee = tlp * (regFeePercent / 100);
+        } else {
+            // When disabled: TCP * Reg Fee %
+            regFee = tcp * (regFeePercent / 100);
+        }
+        
         const moveInFee = tlp * (moveInFeePercent / 100);
         
         spotDownDiscountAmountField.value = termDiscount.toFixed(2);
@@ -290,13 +328,26 @@ function calculate2080Payment() {
     const reservationFee = parseFloat(reservationFeeField.value) || 0;
     const regFeePercent = parseFloat(registrationFeePercentField.value) || 0;
     const moveInFeePercent = parseFloat(moveInFeePercentField.value) || 0;
+    const useTLP = useTLPToggleField.checked;
     
     if (tcp > 0) {
         const downPayment = tcp * 0.20;
         const ndp = downPayment - reservationFee;
         const balance80 = tcp * 0.80;
-        const tlp = tcp / 1.12; // TLP based on TCP
-        const regFee = tlp * (regFeePercent / 100);
+        
+        // Handle special case: TCP <= 3,600,000
+        const tlp = (tcp <= 3600000) ? tcp : (tcp / 1.12);
+        
+        // Calculate Registration Fee based on toggle
+        let regFee;
+        if (useTLP) {
+            // When enabled: TLP * Reg Fee %
+            regFee = tlp * (regFeePercent / 100);
+        } else {
+            // When disabled: TCP * Reg Fee %
+            regFee = tcp * (regFeePercent / 100);
+        }
+        
         const moveInFee = tlp * (moveInFeePercent / 100);
         
         payment2080NetDPField.value = ndp.toFixed(2);
@@ -351,66 +402,76 @@ function update2080Table(terms, ndp, regFee, moveInFee) {
 }
 
 /**
- * Calculate 80% Balance values
+ * Calculate 80% Balance values with Factor Rates
  */
 function calculate80Balance() {
     const tcp = parseFloat(tcpField.value) || 0;
     const regFeePercent = parseFloat(registrationFeePercentField.value) || 0;
+    const useTLP = useTLPToggleField.checked;
     
     if (tcp > 0) {
         const balance80 = tcp * 0.80;
-        const tlp = tcp / 1.12;
-        const regFee = tlp * (regFeePercent / 100);
+        
+        // Handle special case: TCP <= 3,600,000
+        const tlp = (tcp <= 3600000) ? tcp : (tcp / 1.12);
+        
+        // Calculate Registration Fee based on toggle
+        let regFee;
+        if (useTLP) {
+            regFee = tlp * (regFeePercent / 100);
+        } else {
+            regFee = tcp * (regFeePercent / 100);
+        }
+        
         const balance80WithReg = balance80 + regFee;
         
         balance80Field.value = balance80.toFixed(2);
         balance80WithRegField.value = balance80WithReg.toFixed(2);
         
-        // Calculate monthly amortizations for different terms
-        const terms = [];
-        const term1 = parseFloat(balance80Term1Field.value) || 0;
-        const rate1 = parseFloat(balance80Rate1Field.value) || 0;
-        const term2 = parseFloat(balance80Term2Field.value) || 0;
-        const rate2 = parseFloat(balance80Rate2Field.value) || 0;
-        const term3 = parseFloat(balance80Term3Field.value) || 0;
-        const rate3 = parseFloat(balance80Rate3Field.value) || 0;
+        // Calculate with static terms and factor rates
+        // Factor Rates: 1-5 years: 0.0212470447, 6-7 years: 0.0181919633, 8-10 years: 0.0161334957
+        const terms = [
+            { years: 5, rate: 10, factorRate: 0.0212470447 },
+            { years: 7, rate: 13, factorRate: 0.0181919633 },
+            { years: 10, rate: 15, factorRate: 0.0161334957 }
+        ];
         
-        if (term1 > 0 && rate1 > 0) terms.push({ years: term1, rate: rate1 });
-        if (term2 > 0 && rate2 > 0) terms.push({ years: term2, rate: rate2 });
-        if (term3 > 0 && rate3 > 0) terms.push({ years: term3, rate: rate3 });
-        
-        update80BalanceTable(terms, balance80, regFee);
+        update80BalanceTable(terms, balance80, balance80WithReg);
     }
 }
 
 /**
- * Update 80% Balance computation table
+ * Update 80% Balance computation table with Factor Rates
  */
-function update80BalanceTable(terms, balance80, regFee) {
-    const tbody = document.getElementById('balance_80_computation_body');
-    
-    if (terms.length === 0 || balance80 <= 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #6b7280;">Enter contract details and terms to see computations</td></tr>';
+function update80BalanceTable(terms, balance80, balance80WithReg) {
+    if (balance80 <= 0) {
+        balance80MA5Field.textContent = '-';
+        balance80MAReg5Field.textContent = '-';
+        balance80MA7Field.textContent = '-';
+        balance80MAReg7Field.textContent = '-';
+        balance80MA10Field.textContent = '-';
+        balance80MAReg10Field.textContent = '-';
         return;
     }
     
-    let html = '';
+    // Calculate MA using factor rates
+    // Formula: MA = 80% Balance * Factor Rate
+    // Formula: MA with Reg Fee = (80% Balance + Reg Fee) * Factor Rate
     terms.forEach(term => {
-        // Formula: Balance × (1 + (Years × Interest Rate)) ÷ Years ÷ 12
-        const interestDecimal = term.rate / 100;
-        const ma = (balance80 * (1 + (term.years * interestDecimal))) / term.years / 12;
-        const maWithReg = ((balance80 + regFee) * (1 + (term.years * interestDecimal))) / term.years / 12;
+        const ma = balance80 * term.factorRate;
+        const maWithReg = balance80WithReg * term.factorRate;
         
-        html += `
-            <tr>
-                <td>${term.years} years (${term.rate}%)</td>
-                <td>${formatCurrency(ma)}</td>
-                <td>${formatCurrency(maWithReg)}</td>
-            </tr>
-        `;
+        if (term.years === 5) {
+            balance80MA5Field.textContent = formatCurrency(ma);
+            balance80MAReg5Field.textContent = formatCurrency(maWithReg);
+        } else if (term.years === 7) {
+            balance80MA7Field.textContent = formatCurrency(ma);
+            balance80MAReg7Field.textContent = formatCurrency(maWithReg);
+        } else if (term.years === 10) {
+            balance80MA10Field.textContent = formatCurrency(ma);
+            balance80MAReg10Field.textContent = formatCurrency(maWithReg);
+        }
     });
-    
-    tbody.innerHTML = html;
 }
 
 /**

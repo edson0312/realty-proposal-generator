@@ -295,6 +295,7 @@ class PDFService:
             ['Total List Price (TLP)', 'DTCP ÷ 1.12', self._format_currency(data['tlp'])],
             ['Registration Fee (RGF)', 'TLP × %', self._format_currency(data['registration_fee'])],
             ['Move-in Fee (MIF)', 'TLP × %', self._format_currency(data['move_in_fee'])],
+            ['Total Payment', 'NTCP + RGF + MIF', self._format_currency(data.get('total_payment', 0))],
         ]
         
         table = Table(table_data, colWidths=[2.5*inch, 1.8*inch, 1.8*inch], hAlign='CENTER')
