@@ -181,11 +181,11 @@ function calculateSpotCash() {
         // Calculate Registration Fee based on toggle
         let regFee;
         if (useTLP) {
-            // When enabled: Net TCP / 1.12 * Reg Fee %
-            regFee = (ntcp / 1.12) * (regFeePercent / 100);
+            // When enabled: TLP * Reg Fee %
+            regFee = tlp * (regFeePercent / 100);
         } else {
-            // When disabled: Net TCP * Reg Fee %
-            regFee = ntcp * (regFeePercent / 100);
+            // When disabled: DTCP * Reg Fee %
+            regFee = dtcp * (regFeePercent / 100);
         }
         
         const moveInFee = tlp * (moveInFeePercent / 100);

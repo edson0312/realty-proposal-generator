@@ -41,11 +41,11 @@ class ComputationService:
         
         # Calculate Registration Fee based on toggle
         if use_tlp_for_reg_fee:
-            # When enabled: Net TCP / 1.12 * Reg Fee %
-            registration_fee = (ntcp / 1.12) * (registration_fee_percent / 100)
+            # When enabled: TLP * Reg Fee %
+            registration_fee = tlp * (registration_fee_percent / 100)
         else:
-            # When disabled: Net TCP * Reg Fee %
-            registration_fee = ntcp * (registration_fee_percent / 100)
+            # When disabled: DTCP * Reg Fee %
+            registration_fee = dtcp * (registration_fee_percent / 100)
         
         move_in_fee = tlp * (move_in_fee_percent / 100)
         
