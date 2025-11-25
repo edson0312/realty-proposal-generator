@@ -56,7 +56,12 @@
                     
                     <div class="form-group">
                         <label for="brand_vertical">Brand</label>
-                        <input type="text" id="brand_vertical" name="brand">
+                        <select id="brand_vertical" name="brand">
+                            <option value="Metro Gate">Metro Gate</option>
+                            <option value="Heritage Homes/ Villas">Heritage Homes/ Villas</option>
+                            <option value="Moldex Residence">Moldex Residence</option>
+                            <option value="The Grand Series">The Grand Series</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
@@ -89,6 +94,9 @@
                 
                 <div class="form-group">
                     <label for="project_advantages_vertical">Project Advantages</label>
+                    <small style="display: block; margin-bottom: 0.5rem; color: #6b7280;">
+                        Use ChatGPT - Prompt: 3 Unique Selling Proposition why buyers need to buy in {Project}
+                    </small>
                     <textarea id="project_advantages_vertical" name="project_advantages" rows="5"></textarea>
                 </div>
                 
@@ -104,14 +112,19 @@
                     <label for="project_type_horizontal" class="required">Project Type</label>
                     <select id="project_type_horizontal" name="project_type_horiz">
                         <option value="House and Lot">House and Lot</option>
-                        <option value="Lot">Lot</option>
+                        <option value="Lot Only">Lot Only</option>
                     </select>
                 </div>
                 
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="brand_horizontal">Brand</label>
-                        <input type="text" id="brand_horizontal" name="brand_horiz">
+                        <select id="brand_horizontal" name="brand_horiz">
+                            <option value="Metro Gate">Metro Gate</option>
+                            <option value="Heritage Homes/ Villas">Heritage Homes/ Villas</option>
+                            <option value="Moldex Residence">Moldex Residence</option>
+                            <option value="The Grand Series">The Grand Series</option>
+                        </select>
                     </div>
                     
                     <div class="form-group">
@@ -132,6 +145,9 @@
                 
                 <div class="form-group">
                     <label for="project_advantages_horizontal">Project Advantages</label>
+                    <small style="display: block; margin-bottom: 0.5rem; color: #6b7280;">
+                        Use ChatGPT - Prompt: 3 Unique Selling Proposition why buyers need to buy in {Project}
+                    </small>
                     <textarea id="project_advantages_horizontal" name="project_advantages_horiz" rows="5"></textarea>
                 </div>
                 
@@ -299,12 +315,12 @@
                     
                     <div class="form-group">
                         <label for="deferred_term2">Term 2 (months)</label>
-                        <input type="number" id="deferred_term2" name="deferred_term2" min="1" value="18">
+                        <input type="number" id="deferred_term2" name="deferred_term2" min="0" value="18">
                     </div>
                     
                     <div class="form-group">
                         <label for="deferred_term3">Term 3 (months)</label>
-                        <input type="number" id="deferred_term3" name="deferred_term3" min="1" value="24">
+                        <input type="number" id="deferred_term3" name="deferred_term3" min="0" value="24">
                     </div>
                 </div>
                 
@@ -410,12 +426,12 @@
                     
                     <div class="form-group">
                         <label for="payment_20_80_term2">Term 2 (months)</label>
-                        <input type="number" id="payment_20_80_term2" name="payment_20_80_term2" min="1" value="18">
+                        <input type="number" id="payment_20_80_term2" name="payment_20_80_term2" min="0" value="18">
                     </div>
                     
                     <div class="form-group">
                         <label for="payment_20_80_term3">Term 3 (months)</label>
-                        <input type="number" id="payment_20_80_term3" name="payment_20_80_term3" min="1" value="24">
+                        <input type="number" id="payment_20_80_term3" name="payment_20_80_term3" min="0" value="24">
                     </div>
                 </div>
                 
@@ -482,6 +498,54 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </section>
+        
+        <!-- Display Options Section -->
+        <section class="form-section">
+            <h2 class="section-title">Display Options for Generated Proposal</h2>
+            
+            <div class="form-group">
+                <label style="font-weight: bold; margin-bottom: 0.5rem; display: block;">Payment Terms to Show:</label>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="show_spot_cash" id="show_spot_cash" checked style="width: auto;">
+                        <span>Spot Cash</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="show_deferred_payment" id="show_deferred_payment" checked style="width: auto;">
+                        <span>Deferred Payment</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="show_spot_down_payment" id="show_spot_down_payment" checked style="width: auto;">
+                        <span>Spot Down Payment</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="show_20_80_payment" id="show_20_80_payment" checked style="width: auto;">
+                        <span>20/80 Payment Terms</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1.5rem;">
+                <label style="font-weight: bold; margin-bottom: 0.5rem; display: block;">80% Balance Terms to Show:</label>
+                <small style="display: block; margin-bottom: 0.5rem; color: #6b7280;">
+                    (Only applies if Spot Down Payment or 20/80 Payment Terms is selected)
+                </small>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="show_balance_5yr" id="show_balance_5yr" checked style="width: auto;">
+                        <span>5 years (10%)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="show_balance_7yr" id="show_balance_7yr" checked style="width: auto;">
+                        <span>7 years (13%)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="show_balance_10yr" id="show_balance_10yr" style="width: auto;">
+                        <span>10 years (15%)</span>
+                    </label>
+                </div>
             </div>
         </section>
         

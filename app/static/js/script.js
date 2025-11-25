@@ -3,7 +3,10 @@ const proposalForm = document.getElementById('proposalForm');
 const productType = document.getElementById('product_type');
 const verticalFields = document.getElementById('vertical_fields');
 const horizontalFields = document.getElementById('horizontal_fields');
+const projectTypeVertical = document.getElementById('project_type_vertical');
 const projectTypeHorizontal = document.getElementById('project_type_horizontal');
+const brandVertical = document.getElementById('brand_vertical');
+const brandHorizontal = document.getElementById('brand_horizontal');
 const houseAndLotFields = document.getElementById('house_and_lot_fields');
 const lotOnlyFields = document.getElementById('lot_only_fields');
 const generateBtn = document.getElementById('generateBtn');
@@ -68,6 +71,7 @@ const balance80MAReg10Field = document.getElementById('balance_80_ma_reg_10');
 
 // Event Listeners
 productType.addEventListener('change', handleProductTypeChange);
+projectTypeVertical.addEventListener('change', handleProjectTypeVerticalChange);
 projectTypeHorizontal.addEventListener('change', handleProjectTypeHorizontalChange);
 
 // Auto-calculation event listeners
@@ -106,6 +110,7 @@ function handleProductTypeChange() {
         verticalFields.style.display = 'block';
         horizontalFields.style.display = 'none';
         clearFieldGroup(horizontalFields);
+        handleProjectTypeVerticalChange();
     } else {
         verticalFields.style.display = 'none';
         horizontalFields.style.display = 'block';
@@ -115,11 +120,38 @@ function handleProductTypeChange() {
 }
 
 /**
- * Handle horizontal project type change (House and Lot/Lot)
+ * Handle vertical project type change (Mid Rise/High Rise)
+ * Mid Rise Building -> Moldex Residence (read only)
+ * High Rise Building -> The Grand Series (read only)
+ */
+function handleProjectTypeVerticalChange() {
+    const selectedType = projectTypeVertical.value;
+    
+    if (selectedType === 'Mid Rise Building') {
+        brandVertical.value = 'Moldex Residence';
+        brandVertical.disabled = true;
+        // Show only relevant options
+        Array.from(brandVertical.options).forEach(option => {
+            option.style.display = (option.value === 'Moldex Residence') ? 'block' : 'none';
+        });
+    } else if (selectedType === 'High Rise Building') {
+        brandVertical.value = 'The Grand Series';
+        brandVertical.disabled = true;
+        // Show only relevant options
+        Array.from(brandVertical.options).forEach(option => {
+            option.style.display = (option.value === 'The Grand Series') ? 'block' : 'none';
+        });
+    }
+}
+
+/**
+ * Handle horizontal project type change (House and Lot/Lot Only)
+ * House and Lot or Lot Only -> Show only Metro Gate (default) and Heritage Homes/ Villas
  */
 function handleProjectTypeHorizontalChange() {
     const selectedType = projectTypeHorizontal.value;
     
+    // Show/hide fields based on project type
     if (selectedType === 'House and Lot') {
         houseAndLotFields.style.display = 'block';
         lotOnlyFields.style.display = 'none';
@@ -129,6 +161,19 @@ function handleProjectTypeHorizontalChange() {
         lotOnlyFields.style.display = 'block';
         clearFieldGroup(houseAndLotFields);
     }
+    
+    // For both House and Lot and Lot Only, show only Metro Gate and Heritage Homes/ Villas
+    brandHorizontal.disabled = false;
+    brandHorizontal.value = 'Metro Gate'; // Set default to Metro Gate
+    
+    // Show only Metro Gate and Heritage Homes/ Villas options
+    Array.from(brandHorizontal.options).forEach(option => {
+        if (option.value === 'Metro Gate' || option.value === 'Heritage Homes/ Villas') {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
+        }
+    });
 }
 
 /**
@@ -493,6 +538,15 @@ async function handleFormSubmit(e) {
     try {
         const formData = new FormData(proposalForm);
         
+        // Add display options checkboxes
+        formData.set('show_spot_cash', document.getElementById('show_spot_cash').checked);
+        formData.set('show_deferred_payment', document.getElementById('show_deferred_payment').checked);
+        formData.set('show_spot_down_payment', document.getElementById('show_spot_down_payment').checked);
+        formData.set('show_20_80_payment', document.getElementById('show_20_80_payment').checked);
+        formData.set('show_balance_5yr', document.getElementById('show_balance_5yr').checked);
+        formData.set('show_balance_7yr', document.getElementById('show_balance_7yr').checked);
+        formData.set('show_balance_10yr', document.getElementById('show_balance_10yr').checked);
+        
         // Handle conditional fields based on product type
         const productTypeValue = formData.get('product_type');
         
@@ -536,15 +590,47 @@ async function handleFormSubmit(e) {
             body: formData
         });
         
-        const result = await response.json();
-        
-        if (result.success) {
-            showMessage('success', `
-                Proposal generated successfully! 
-                <a href="${result.download_url}" target="_blank">Click here to download</a>
-            `);
+        if (response.ok) {
+            // Check if response is a PDF file
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/pdf')) {
+                // Get the blob and trigger download
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                
+                // Get filename from Content-Disposition header or use default
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = 'proposal.pdf';
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].replace(/['"]/g, '');
+                    }
+                }
+                a.download = filename;
+                
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showMessage('success', 'Proposal generated and downloaded successfully!');
+            } else {
+                // Try to parse as JSON for error messages
+                const result = await response.json();
+                showMessage('error', result.message || 'Failed to generate proposal');
+            }
         } else {
-            showMessage('error', result.message || 'Failed to generate proposal');
+            // Handle error response
+            try {
+                const result = await response.json();
+                showMessage('error', result.message || 'Failed to generate proposal');
+            } catch {
+                showMessage('error', 'Failed to generate proposal. Please try again.');
+            }
         }
     } catch (error) {
         console.error('Error:', error);

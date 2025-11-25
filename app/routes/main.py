@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, request, jsonify, send_file, current_app
 from werkzeug.utils import secure_filename
 import os
+import tempfile
 from typing import Dict, Any
 
 from app.services.computation_service import ComputationService
@@ -47,6 +48,15 @@ def generate_proposal():
         move_in_fee_percent = float(form_data.get('move_in_fee_percent', 0))
         use_tlp_toggle = form_data.get('use_tlp_toggle') == 'on'  # Checkbox value
         
+        # Get display options
+        show_spot_cash = form_data.get('show_spot_cash') == 'true'
+        show_deferred_payment = form_data.get('show_deferred_payment') == 'true'
+        show_spot_down_payment = form_data.get('show_spot_down_payment') == 'true'
+        show_20_80_payment = form_data.get('show_20_80_payment') == 'true'
+        show_balance_5yr = form_data.get('show_balance_5yr') == 'true'
+        show_balance_7yr = form_data.get('show_balance_7yr') == 'true'
+        show_balance_10yr = form_data.get('show_balance_10yr') == 'true'
+        
         # Initialize computation service
         comp_service = ComputationService()
         
@@ -63,7 +73,14 @@ def generate_proposal():
             'reservation_fee': reservation_fee,
             'registration_fee_percent': registration_fee_percent,
             'move_in_fee_percent': move_in_fee_percent,
-            'picture_path': picture_path
+            'picture_path': picture_path,
+            'show_spot_cash': show_spot_cash,
+            'show_deferred_payment': show_deferred_payment,
+            'show_spot_down_payment': show_spot_down_payment,
+            'show_20_80_payment': show_20_80_payment,
+            'show_balance_5yr': show_balance_5yr,
+            'show_balance_7yr': show_balance_7yr,
+            'show_balance_10yr': show_balance_10yr
         }
         
         # Add product-specific fields
@@ -92,8 +109,8 @@ def generate_proposal():
             else:  # Lot
                 data['lot_area'] = form_data.get('lot_area', '')
         
-        # Compute Spot Cash if discount provided
-        if form_data.get('spot_cash_discount'):
+        # Compute Spot Cash if discount provided and checkbox is checked
+        if show_spot_cash and form_data.get('spot_cash_discount'):
             discount = float(form_data.get('spot_cash_discount', 0))
             spot_cash_data = comp_service.compute_spot_cash(
                 tcp, discount, reservation_fee,
@@ -102,26 +119,33 @@ def generate_proposal():
             )
             data['spot_cash_data'] = spot_cash_data
         
-        # Compute Deferred Payment if terms provided
-        deferred_terms = []
-        if form_data.get('deferred_term1'):
-            deferred_terms.append(int(form_data.get('deferred_term1')))
-        if form_data.get('deferred_term2'):
-            deferred_terms.append(int(form_data.get('deferred_term2')))
-        if form_data.get('deferred_term3'):
-            deferred_terms.append(int(form_data.get('deferred_term3')))
+        # Compute Deferred Payment if terms provided and checkbox is checked
+        if show_deferred_payment:
+            deferred_terms = []
+            if form_data.get('deferred_term1'):
+                term1 = int(form_data.get('deferred_term1'))
+                if term1 > 0:
+                    deferred_terms.append(term1)
+            if form_data.get('deferred_term2'):
+                term2 = int(form_data.get('deferred_term2'))
+                if term2 > 0:
+                    deferred_terms.append(term2)
+            if form_data.get('deferred_term3'):
+                term3 = int(form_data.get('deferred_term3'))
+                if term3 > 0:
+                    deferred_terms.append(term3)
+            
+            if deferred_terms:
+                deferred_data = comp_service.compute_deferred_payment(
+                    tcp, reservation_fee,
+                    registration_fee_percent, move_in_fee_percent,
+                    deferred_terms,
+                    use_tlp_toggle
+                )
+                data['deferred_payment_data'] = deferred_data
         
-        if deferred_terms:
-            deferred_data = comp_service.compute_deferred_payment(
-                tcp, reservation_fee,
-                registration_fee_percent, move_in_fee_percent,
-                deferred_terms,
-                use_tlp_toggle
-            )
-            data['deferred_payment_data'] = deferred_data
-        
-        # Compute Spot Down Payment if discount provided
-        if form_data.get('spot_down_discount'):
+        # Compute Spot Down Payment if discount provided and checkbox is checked
+        if show_spot_down_payment and form_data.get('spot_down_discount'):
             discount = float(form_data.get('spot_down_discount', 0))
             spot_down_data = comp_service.compute_spot_down_payment(
                 tcp, discount, reservation_fee,
@@ -130,51 +154,61 @@ def generate_proposal():
             )
             data['spot_down_payment_data'] = spot_down_data
         
-        # Compute 20/80 Payment if terms provided
-        payment_20_80_terms = []
-        if form_data.get('payment_20_80_term1'):
-            payment_20_80_terms.append(int(form_data.get('payment_20_80_term1')))
-        if form_data.get('payment_20_80_term2'):
-            payment_20_80_terms.append(int(form_data.get('payment_20_80_term2')))
-        if form_data.get('payment_20_80_term3'):
-            payment_20_80_terms.append(int(form_data.get('payment_20_80_term3')))
-        
-        if payment_20_80_terms:
-            payment_20_80_data = comp_service.compute_20_80_payment(
-                tcp, reservation_fee,
-                registration_fee_percent, move_in_fee_percent,
-                payment_20_80_terms,
-                use_tlp_toggle
-            )
-            data['payment_20_80_data'] = payment_20_80_data
+        # Compute 20/80 Payment if terms provided and checkbox is checked
+        if show_20_80_payment:
+            payment_20_80_terms = []
+            if form_data.get('payment_20_80_term1'):
+                term1 = int(form_data.get('payment_20_80_term1'))
+                if term1 > 0:
+                    payment_20_80_terms.append(term1)
+            if form_data.get('payment_20_80_term2'):
+                term2 = int(form_data.get('payment_20_80_term2'))
+                if term2 > 0:
+                    payment_20_80_terms.append(term2)
+            if form_data.get('payment_20_80_term3'):
+                term3 = int(form_data.get('payment_20_80_term3'))
+                if term3 > 0:
+                    payment_20_80_terms.append(term3)
+            
+            if payment_20_80_terms:
+                payment_20_80_data = comp_service.compute_20_80_payment(
+                    tcp, reservation_fee,
+                    registration_fee_percent, move_in_fee_percent,
+                    payment_20_80_terms,
+                    use_tlp_toggle
+                )
+                data['payment_20_80_data'] = payment_20_80_data
         
         # Compute 80% balance amortizations with static terms and factor rates
-        # Static terms: 5 years (10%), 7 years (13%), 10 years (15%)
+        # Only include if Spot Down Payment or 20/80 Payment is selected
         balance_80_amortizations = []
         
-        # Calculate registration fee for 80% balance
-        if tcp <= 3600000:
-            tlp = tcp
-        else:
-            tlp = tcp / 1.12
-        
-        if use_tlp_toggle:
-            reg_fee_for_80 = tlp * (registration_fee_percent / 100)
-        else:
-            reg_fee_for_80 = tcp * (registration_fee_percent / 100)
-        
-        # Static terms with factor rates
-        static_terms = [
-            {'years': 5, 'rate': 10},
-            {'years': 7, 'rate': 13},
-            {'years': 10, 'rate': 15}
-        ]
-        
-        for term in static_terms:
-            amort = comp_service.compute_80_balance_amortization(
-                tcp, term['years'], term['rate'], reg_fee_for_80
-            )
-            balance_80_amortizations.append(amort)
+        if show_spot_down_payment or show_20_80_payment:
+            # Calculate registration fee for 80% balance
+            if tcp <= 3600000:
+                tlp = tcp
+            else:
+                tlp = tcp / 1.12
+            
+            if use_tlp_toggle:
+                reg_fee_for_80 = tlp * (registration_fee_percent / 100)
+            else:
+                reg_fee_for_80 = tcp * (registration_fee_percent / 100)
+            
+            # Static terms with factor rates - only include selected ones
+            static_terms = []
+            if show_balance_5yr:
+                static_terms.append({'years': 5, 'rate': 10})
+            if show_balance_7yr:
+                static_terms.append({'years': 7, 'rate': 13})
+            if show_balance_10yr:
+                static_terms.append({'years': 10, 'rate': 15})
+            
+            for term in static_terms:
+                amort = comp_service.compute_80_balance_amortization(
+                    tcp, term['years'], term['rate'], reg_fee_for_80
+                )
+                balance_80_amortizations.append(amort)
         
         # Add 80% balance amortizations to whichever payment method is being used
         if balance_80_amortizations:
@@ -188,17 +222,33 @@ def generate_proposal():
         data['registration_fee'] = tlp * (registration_fee_percent / 100)
         data['move_in_fee'] = tlp * (move_in_fee_percent / 100)
         
-        # Generate PDF
-        pdf_service = PDFService(current_app.config['UPLOAD_FOLDER'])
+        # Generate PDF in temporary directory
+        temp_dir = tempfile.gettempdir()
+        pdf_service = PDFService(temp_dir)
         pdf_path = pdf_service.generate_proposal(data)
         
-        # Return success response
-        filename = os.path.basename(pdf_path)
-        return jsonify({
-            'success': True,
-            'message': 'Proposal generated successfully!',
-            'download_url': f'/download/{filename}'
-        })
+        # Send file directly and delete after sending
+        try:
+            return send_file(
+                pdf_path,
+                as_attachment=True,
+                download_name=os.path.basename(pdf_path),
+                mimetype='application/pdf'
+            )
+        finally:
+            # Clean up temporary PDF file after sending
+            try:
+                if os.path.exists(pdf_path):
+                    os.remove(pdf_path)
+            except Exception as e:
+                current_app.logger.warning(f"Could not delete temporary PDF file {pdf_path}: {str(e)}")
+            
+            # Clean up uploaded picture file if it exists
+            if picture_path and os.path.exists(picture_path):
+                try:
+                    os.remove(picture_path)
+                except Exception as e:
+                    current_app.logger.warning(f"Could not delete uploaded picture file {picture_path}: {str(e)}")
     
     except Exception as e:
         current_app.logger.error(f"Error generating proposal: {str(e)}")
@@ -208,39 +258,6 @@ def generate_proposal():
         }), 500
 
 
-@main_bp.route('/download/<filename>')
-def download_file(filename: str):
-    """
-    Download generated PDF file.
-    
-    Args:
-        filename: Name of the file to download
-        
-    Returns:
-        File download response
-    """
-    try:
-        # Secure the filename
-        safe_filename = secure_filename(filename)
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], safe_filename)
-        
-        # Log for debugging
-        current_app.logger.info(f"Attempting to download file: {file_path}")
-        current_app.logger.info(f"File exists: {os.path.exists(file_path)}")
-        
-        if os.path.exists(file_path):
-            return send_file(
-                file_path, 
-                as_attachment=True, 
-                download_name=safe_filename,
-                mimetype='application/pdf'
-            )
-        else:
-            current_app.logger.error(f"File not found: {file_path}")
-            return jsonify({'error': 'File not found', 'path': file_path}), 404
-    except Exception as e:
-        current_app.logger.error(f"Error downloading file: {str(e)}", exc_info=True)
-        return jsonify({'error': f'Error downloading file: {str(e)}'}), 500
 
 
 @main_bp.route('/api/compute', methods=['POST'])

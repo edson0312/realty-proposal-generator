@@ -154,12 +154,12 @@ class PDFService:
         story.append(PageBreak())
         story.append(Paragraph("PAYMENT TERMS", heading_style))
         
-        # Add computation tables based on available data
-        if data.get('spot_cash_data'):
+        # Add computation tables based on available data and display options
+        if data.get('show_spot_cash', True) and data.get('spot_cash_data'):
             story.append(self._create_spot_cash_section(data['spot_cash_data']))
             story.append(Spacer(1, 0.3*inch))
         
-        if data.get('deferred_payment_data'):
+        if data.get('show_deferred_payment', True) and data.get('deferred_payment_data'):
             deferred_elements = self._create_deferred_payment_section(data['deferred_payment_data'])
             if isinstance(deferred_elements, list):
                 story.extend(deferred_elements)
@@ -167,11 +167,24 @@ class PDFService:
                 story.append(deferred_elements)
             story.append(Spacer(1, 0.3*inch))
         
-        if data.get('spot_down_payment_data'):
+        if data.get('show_spot_down_payment', True) and data.get('spot_down_payment_data'):
             story.append(self._create_spot_down_payment_section(data['spot_down_payment_data']))
             story.append(Spacer(1, 0.3*inch))
+            
+            # Add 80% Balance section if available (for Spot Down Payment)
+            if data['spot_down_payment_data'].get('balance_80_amortizations'):
+                balance_elements = self._create_80_balance_section(
+                    data['spot_down_payment_data']['balance_80_amortizations'],
+                    data['spot_down_payment_data']['balance_80'],
+                    data.get('registration_fee', 0)
+                )
+                if isinstance(balance_elements, list):
+                    story.extend(balance_elements)
+                else:
+                    story.append(balance_elements)
+                story.append(Spacer(1, 0.3*inch))
         
-        if data.get('payment_20_80_data'):
+        if data.get('show_20_80_payment', True) and data.get('payment_20_80_data'):
             payment_elements = self._create_20_80_payment_section(data['payment_20_80_data'])
             if isinstance(payment_elements, list):
                 story.extend(payment_elements)
@@ -179,7 +192,7 @@ class PDFService:
                 story.append(payment_elements)
             story.append(Spacer(1, 0.3*inch))
             
-            # Add 80% Balance section if available
+            # Add 80% Balance section if available (for 20/80 Payment)
             if data['payment_20_80_data'].get('balance_80_amortizations'):
                 balance_elements = self._create_80_balance_section(
                     data['payment_20_80_data']['balance_80_amortizations'],
@@ -292,9 +305,8 @@ class PDFService:
             ['Discounted TCP (DTCP)/Net TCP (NTCP)', 'TCP - TD', self._format_currency(data['dtcp'])],
             ['Less Reservation Fee (RF)', 'Input', self._format_currency(data['reservation_fee'])],
             ['DTCP - RF', 'DTCP - RF', self._format_currency(data.get('dtcp_less_rf', 0))],
-            ['Total List Price (TLP)', 'DTCP ÷ 1.12', self._format_currency(data['tlp'])],
-            ['Registration Fee (RGF)', 'TLP × %', self._format_currency(data['registration_fee'])],
-            ['Move-in Fee (MIF)', 'TLP × %', self._format_currency(data['move_in_fee'])],
+            ['Registration Fee (RGF)', 'TLP × RGF%', self._format_currency(data['registration_fee'])],
+            ['Move-in Fee (MIF)', 'TLP × MIF%', self._format_currency(data['move_in_fee'])],
             ['Total Payment', 'NTCP + RGF + MIF', self._format_currency(data.get('total_payment', 0))],
         ]
         
@@ -337,9 +349,8 @@ class PDFService:
             ['Total Contract Price (TCP)/Net TCP (NTCP)', '—', self._format_currency(data['tcp'])],
             ['Less Reservation Fee (RF)', 'Input', self._format_currency(data['reservation_fee'])],
             ['TCP - RF', 'TCP - RF', self._format_currency(data.get('tcp_less_rf', 0))],
-            ['Total List Price (TLP)', 'TCP ÷ 1.12', self._format_currency(data['tlp'])],
-            ['Registration Fee (RGF)', 'TLP × %', self._format_currency(data['registration_fee'])],
-            ['Move-in Fee (MIF)', 'TLP × %', self._format_currency(data['move_in_fee'])],
+            ['Registration Fee (RGF)', 'TLP × RGF%', self._format_currency(data['registration_fee'])],
+            ['Move-in Fee (MIF)', 'TLP × MIF%', self._format_currency(data['move_in_fee'])],
         ]
         
         table = Table(table_data, colWidths=[2.5*inch, 1.8*inch, 1.8*inch], hAlign='CENTER')
@@ -448,9 +459,8 @@ class PDFService:
             ['Less Reservation Fee (RF)', 'Input', self._format_currency(data['reservation_fee'])],
             ['Net Down Payment (NDP)', 'DP - (TD + RF)', self._format_currency(data['ndp'])],
             ['80% Balance', 'TCP × 80%', self._format_currency(data['balance_80'])],
-            ['Total List Price (TLP)', 'TCP ÷ 1.12', self._format_currency(data['tlp'])],
-            ['Registration Fee (RGF)', 'TLP × %', self._format_currency(data['registration_fee'])],
-            ['Move-in Fee (MIF)', 'TLP × %', self._format_currency(data['move_in_fee'])],
+            ['Registration Fee (RGF)', 'TLP × RGF%', self._format_currency(data['registration_fee'])],
+            ['Move-in Fee (MIF)', 'TLP × MIF%', self._format_currency(data['move_in_fee'])],
         ]
         
         table = Table(table_data, colWidths=[2.5*inch, 1.8*inch, 1.8*inch], hAlign='CENTER')
@@ -494,9 +504,8 @@ class PDFService:
             ['Less Reservation Fee (RF)', 'Input', self._format_currency(data['reservation_fee'])],
             ['Net Down Payment (NDP)', 'DP - RF', self._format_currency(data['ndp'])],
             ['80% Balance', 'TCP × 80%', self._format_currency(data['balance_80'])],
-            ['Total List Price (TLP)', 'TCP ÷ 1.12', self._format_currency(data['tlp'])],
-            ['Registration Fee (RGF)', 'TLP × %', self._format_currency(data['registration_fee'])],
-            ['Move-in Fee (MIF)', 'TLP × %', self._format_currency(data['move_in_fee'])],
+            ['Registration Fee (RGF)', 'TLP × RGF%', self._format_currency(data['registration_fee'])],
+            ['Move-in Fee (MIF)', 'TLP × MIF%', self._format_currency(data['move_in_fee'])],
             [''],
             ['Payment Options:', '', ''],
             ['20% Net Down Payment', '', self._format_currency(data['net_down_payment_20'])],
