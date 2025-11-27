@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="header">
-    <img src="{{ url_for('static', filename='../img/Moldex_Page_Header.jpg') }}" alt="Moldex Realty" class="header-logo">
+    <img src="{{ url_for('static', filename='img/Moldex_Page_Header.jpg') }}" alt="Moldex Realty" class="header-logo">
 </div>
 
 <div class="main-content">
@@ -58,7 +58,7 @@
                         <label for="brand_vertical">Brand</label>
                         <select id="brand_vertical" name="brand">
                             <option value="Metro Gate">Metro Gate</option>
-                            <option value="Heritage Homes/ Villas">Heritage Homes/ Villas</option>
+                            <option value="Heritage">Heritage</option>
                             <option value="Moldex Residence">Moldex Residence</option>
                             <option value="The Grand Series">The Grand Series</option>
                         </select>
@@ -101,8 +101,11 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="picture_vertical">Picture</label>
-                    <input type="file" id="picture_vertical" name="picture" accept="image/*">
+                    <label for="picture_vertical">Pictures (up to 4 images)</label>
+                    <input type="file" id="picture_vertical" name="pictures" accept="image/*" multiple>
+                    <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                        Select up to 4 images. If multiple images are selected, they will be combined into a collage.
+                    </small>
                 </div>
             </div>
             
@@ -121,7 +124,7 @@
                         <label for="brand_horizontal">Brand</label>
                         <select id="brand_horizontal" name="brand_horiz">
                             <option value="Metro Gate">Metro Gate</option>
-                            <option value="Heritage Homes/ Villas">Heritage Homes/ Villas</option>
+                            <option value="Heritage">Heritage</option>
                             <option value="Moldex Residence">Moldex Residence</option>
                             <option value="The Grand Series">The Grand Series</option>
                         </select>
@@ -176,8 +179,11 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="picture_hl">Picture</label>
-                        <input type="file" id="picture_hl" name="picture_hl" accept="image/*">
+                        <label for="picture_hl">Pictures (up to 4 images)</label>
+                        <input type="file" id="picture_hl" name="pictures_hl" accept="image/*" multiple>
+                        <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                            Select up to 4 images. If multiple images are selected, they will be combined into a collage.
+                        </small>
                     </div>
                 </div>
                 
@@ -189,8 +195,11 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="picture_lot">Picture</label>
-                        <input type="file" id="picture_lot" name="picture_lot" accept="image/*">
+                        <label for="picture_lot">Pictures (up to 4 images)</label>
+                        <input type="file" id="picture_lot" name="pictures_lot" accept="image/*" multiple>
+                        <small style="display: block; margin-top: 0.5rem; color: #6b7280;">
+                            Select up to 4 images. If multiple images are selected, they will be combined into a collage.
+                        </small>
                     </div>
                 </div>
             </div>
@@ -329,9 +338,9 @@
                         <tr>
                             <th>Months</th>
                             <th>MA</th>
-                            <th>MA with Reg Fee</th>
-                            <th>MA with Move In Fee</th>
-                            <th>MA with Reg Fee & Move In Fee</th>
+                            <th>MA w/ RegF</th>
+                            <th>MA w/ MIF</th>
+                            <th>MA w/ RegF & MIF</th>
                         </tr>
                     </thead>
                     <tbody id="deferred_computation_body">
@@ -440,9 +449,9 @@
                         <tr>
                             <th>Months</th>
                             <th>MA</th>
-                            <th>MA with Reg Fee</th>
-                            <th>MA with Move In Fee</th>
-                            <th>MA with Reg Fee & Move In Fee</th>
+                            <th>MA w/ RegF</th>
+                            <th>MA w/ MIF</th>
+                            <th>MA w/ RegF & MIF</th>
                         </tr>
                     </thead>
                     <tbody id="payment_20_80_computation_body">
@@ -477,7 +486,7 @@
                         <tr>
                             <th>Years (Interest %)</th>
                             <th>MA</th>
-                            <th>MA with Reg Fee</th>
+                            <th>MA w/ RegF</th>
                         </tr>
                     </thead>
                     <tbody id="balance_80_computation_body">

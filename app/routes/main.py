@@ -7,6 +7,7 @@ from typing import Dict, Any
 
 from app.services.computation_service import ComputationService
 from app.services.pdf_service import PDFService
+from app.services.image_service import ImageService
 from app.utils.file_helper import save_uploaded_file, format_currency
 
 main_bp = Blueprint('main', __name__)
@@ -30,16 +31,14 @@ def generate_proposal():
         # Extract form data
         form_data = request.form.to_dict()
         
-        # Handle file upload
+        # Handle multiple image uploads
         picture_path = None
-        if 'picture' in request.files:
-            file = request.files['picture']
-            if file and file.filename:
-                picture_path = save_uploaded_file(
-                    file,
-                    current_app.config['UPLOAD_FOLDER'],
-                    current_app.config['ALLOWED_EXTENSIONS']
-                )
+        if 'pictures' in request.files:
+            files = request.files.getlist('pictures')
+            if files and any(f.filename for f in files):
+                # Use image service to process images (single or collage)
+                image_service = ImageService(current_app.config['UPLOAD_FOLDER'])
+                picture_path = image_service.process_uploaded_images(files)
         
         # Convert numeric fields
         tcp = float(form_data.get('tcp', 0))

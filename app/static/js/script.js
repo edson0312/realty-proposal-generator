@@ -75,7 +75,10 @@ projectTypeVertical.addEventListener('change', handleProjectTypeVerticalChange);
 projectTypeHorizontal.addEventListener('change', handleProjectTypeHorizontalChange);
 
 // Auto-calculation event listeners
-tcpField.addEventListener('input', calculateAll);
+tcpField.addEventListener('input', function() {
+    calculateReservationFee();
+    calculateAll();
+});
 reservationFeeField.addEventListener('input', calculateAll);
 registrationFeePercentField.addEventListener('input', calculateAll);
 moveInFeePercentField.addEventListener('input', calculateAll);
@@ -117,6 +120,9 @@ function handleProductTypeChange() {
         clearFieldGroup(verticalFields);
         handleProjectTypeHorizontalChange();
     }
+    
+    // Calculate reservation fee for horizontal projects
+    calculateReservationFee();
 }
 
 /**
@@ -166,9 +172,9 @@ function handleProjectTypeHorizontalChange() {
     brandHorizontal.disabled = false;
     brandHorizontal.value = 'Metro Gate'; // Set default to Metro Gate
     
-    // Show only Metro Gate and Heritage Homes/ Villas options
+    // Show only Metro Gate and Heritage options
     Array.from(brandHorizontal.options).forEach(option => {
-        if (option.value === 'Metro Gate' || option.value === 'Heritage Homes/ Villas') {
+        if (option.value === 'Metro Gate' || option.value === 'Heritage') {
             option.style.display = 'block';
         } else {
             option.style.display = 'none';
@@ -190,6 +196,40 @@ function clearFieldGroup(fieldGroup) {
             input.value = '';
         }
     });
+}
+
+/**
+ * Calculate reservation fee for Horizontal projects based on TCP
+ */
+function calculateReservationFee() {
+    const selectedProductType = productType.value;
+    
+    // Only auto-calculate for Horizontal projects
+    if (selectedProductType === 'Horizontal') {
+        const tcp = parseFloat(tcpField.value) || 0;
+        
+        if (tcp > 0) {
+            let reservationFee = 0;
+            
+            if (tcp < 1500000) {
+                reservationFee = 10000;
+            } else if (tcp >= 1500000 && tcp <= 2999999) {
+                reservationFee = 20000;
+            } else if (tcp >= 3000000 && tcp <= 4999999) {
+                reservationFee = 30000;
+            } else if (tcp >= 5000000 && tcp <= 9999999) {
+                reservationFee = 40000;
+            } else if (tcp >= 10000000 && tcp <= 14999999) {
+                reservationFee = 60000;
+            } else if (tcp >= 15000000 && tcp <= 19999999) {
+                reservationFee = 80000;
+            } else if (tcp >= 20000000) {
+                reservationFee = 100000;
+            }
+            
+            reservationFeeField.value = reservationFee;
+        }
+    }
 }
 
 /**
@@ -557,9 +597,11 @@ async function handleFormSubmit(e) {
             formData.set('property_details_vertical', formData.get('property_details_vertical') || '');
             formData.set('floor_area', formData.get('floor_area') || formData.get('floor_area_vertical') || '');
             
-            const pictureFile = document.getElementById('picture_vertical').files[0];
-            if (pictureFile) {
-                formData.set('picture', pictureFile);
+            const pictureFiles = document.getElementById('picture_vertical').files;
+            if (pictureFiles.length > 0) {
+                for (let i = 0; i < Math.min(pictureFiles.length, 4); i++) {
+                    formData.append('pictures', pictureFiles[i]);
+                }
             }
         } else {
             formData.set('project_type', formData.get('project_type_horiz') || '');
@@ -570,16 +612,20 @@ async function handleFormSubmit(e) {
                 formData.set('lot_area', formData.get('lot_area_hl') || '');
                 formData.set('floor_area', formData.get('floor_area_hl') || '');
                 
-                const pictureFile = document.getElementById('picture_hl').files[0];
-                if (pictureFile) {
-                    formData.set('picture', pictureFile);
+                const pictureFiles = document.getElementById('picture_hl').files;
+                if (pictureFiles.length > 0) {
+                    for (let i = 0; i < Math.min(pictureFiles.length, 4); i++) {
+                        formData.append('pictures', pictureFiles[i]);
+                    }
                 }
             } else {
                 formData.set('lot_area', formData.get('lot_area_lot') || '');
                 
-                const pictureFile = document.getElementById('picture_lot').files[0];
-                if (pictureFile) {
-                    formData.set('picture', pictureFile);
+                const pictureFiles = document.getElementById('picture_lot').files;
+                if (pictureFiles.length > 0) {
+                    for (let i = 0; i < Math.min(pictureFiles.length, 4); i++) {
+                        formData.append('pictures', pictureFiles[i]);
+                    }
                 }
             }
         }

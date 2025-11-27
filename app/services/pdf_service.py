@@ -380,7 +380,7 @@ class PDFService:
     
     def _create_ma_table(self, data: Dict[str, Any], payment_type: str) -> Table:
         """Create Monthly Amortization breakdown table."""
-        ma_data = [['Months', 'MA', 'MA with Reg Fee', 'MA with Move In Fee', 'MA with Reg Fee & Move In Fee']]
+        ma_data = [['Months', 'MA', 'MA w/ RegF', 'MA w/ MIF', 'MA w/ RegF & MIF']]
         
         if payment_type == 'DEFERRED':
             net_amount = data['ntcp']
@@ -592,7 +592,7 @@ class PDFService:
         # Build header row
         header_row = ['Years (Interest %)']
         ma_row = ['MA']
-        ma_with_reg_row = ['MA with Reg Fee']
+        ma_with_reg_row = ['MA w/ RegF']
         
         for amort in amortizations:
             years = int(amort['years'])
